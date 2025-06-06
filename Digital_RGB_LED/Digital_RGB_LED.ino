@@ -37,10 +37,15 @@
 #include "palette.h"
 #include "knob.h"
 #include "ultrasound.h"
+#include "filters/InputPipeline.h"
 
 CRGB leds[NUM_LEDS];
 CRGBPalette256 currentPalette;
 TBlendType currentBlending;
+
+#ifdef WAVE_LENGTH_SCALE_KNOB_PIN
+InputPipeline waveLengthPipeline;
+#endif
 
 // Palette array and index definitions
 const TProgmemRGBPalette16* const* gPalettes = PREDEFINED_PALETTES;  // matches extern in config.h
@@ -58,6 +63,11 @@ int resolution = RESOLUTION;
 int brightness = BRIGHTNESS;
 float waveLengthScale = WAVE_LENGTH_SCALE;
 float bpm = BPM;
+
+// Floating-point map function
+float mapf(float x, float in_min, float in_max, float out_min, float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 // Calculate the delay between frames so that:
 //   - One "beat" (as defined by BPM) is the time required to step through
@@ -116,6 +126,9 @@ void setup() {
 #ifdef WAVE_LENGTH_SCALE_KNOB_PIN
   dbg::print("Using wavelength scale knob at pin  ");
   dbg::println(WAVE_LENGTH_SCALE_KNOB_PIN);
+  waveLengthPipeline.useZeroGuard(6, 10);        // History length = 6, threshold = 10
+  waveLengthPipeline.useDeadband(7.0);           // ±2 analog units = no update
+  waveLengthPipeline.useAdaptiveSmoother(0.1, 250.0);  // EMA with alpha = 0.1
 #endif
 
   ultrasoundSetup();  // If pins are not set, it does not execute anything
@@ -155,9 +168,9 @@ void loop() {
     shouldUpdate = true;
 
     if (missedFrames > 0) {
-      dbg::print("[ANIMATION] Skipped frames: ");
-      dbg::print(missedFrames);
-      dbg::print(", ");
+      // dbg::print("[ANIMATION] Skipped frames: ");
+      // dbg::print(missedFrames);
+      // dbg::print(", ");
       digitalWrite(LED_BUILTIN, HIGH);
     } else {
       digitalWrite(LED_BUILTIN, LOW);
@@ -224,19 +237,28 @@ void bpmByKnob() {
 
 void waveLengthByKnob() {
 #ifdef WAVE_LENGTH_SCALE_KNOB_PIN
-  float newWaveLengthScale = calculateKnobValueForPin<float>(WAVE_LENGTH_SCALE_KNOB_PIN, WAVE_LENGTH_SCALE_MIN, WAVE_LENGTH_SCALE_MAX, 0, KNOB_5V);
-  if (abs(waveLengthScale - newWaveLengthScale) > WAVE_LENGTH_SCALE_CHANGE_THRESHOLD) {  // add threshold to avoid flickering
-    dbg::print("[ANIMATION] Wave length scale changed from ");
-    dbg::print(waveLengthScale);
-    dbg::print(" to ");
-    dbg::println(newWaveLengthScale);
-    waveLengthScale = newWaveLengthScale;
-    // Rebuild virtual buffer to reflect new wave length scale.
-    RebuildVirtualLeds(waveLengthScale, resolution);
-    setLeds();
+  int raw = analogRead(WAVE_LENGTH_SCALE_KNOB_PIN);
+
+  if (waveLengthPipeline.update(raw)) {
+    float filtered = waveLengthPipeline.get();
+
+    float newWaveLengthScale = mapf(filtered, 0, KNOB_5V, WAVE_LENGTH_SCALE_MIN, WAVE_LENGTH_SCALE_MAX);
+
+    if (abs(waveLengthScale - newWaveLengthScale) > WAVE_LENGTH_SCALE_CHANGE_THRESHOLD) {
+      dbg::println("");
+      dbg::print("[ANIMATION] Wave length scale changed from ");
+      dbg::print(waveLengthScale);
+      dbg::print(" to ");
+      dbg::println(newWaveLengthScale);
+      waveLengthScale = newWaveLengthScale;
+      // Rebuild virtual buffer to reflect new wave length scale.
+      RebuildVirtualLeds(waveLengthScale, resolution);
+      setLeds();
+    }
   }
 #endif  // WAVE_LENGTH_SCALE_KNOB_PIN
 }
+
 
 void handleUltrasound() {
   // If pins are not set, this function does nothing
@@ -248,6 +270,7 @@ void handleUltrasound() {
     // dbg::println(cm);
 
     /* example: map 3-30 cm to brightness 0-255 */
+    dbg::println("STALE FUNCTION: `map`. Use `mapf` instead.");
     int newBright = constrain(
       map((int)cm, US_MIN_DISTANCE_CM, US_MAX_DISTANCE_CM, BRIGHTNESS_MAX, BRIGHTNESS_MIN),
       BRIGHTNESS_MIN, BRIGHTNESS_MAX);

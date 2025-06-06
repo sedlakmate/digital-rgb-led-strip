@@ -1,3 +1,5 @@
+#include "../debug.h"
+
 #ifndef ADAPTIVE_SMOOTHER_H
 #define ADAPTIVE_SMOOTHER_H
 
@@ -20,7 +22,7 @@ public:
      * @param alpha Smoothing factor for EMA (e.g., 0.2).
      * @param jitterThreshold Values within this delta will be smoothed; otherwise replaced directly.
      */
-  AdaptiveSmoother(float alpha = 0.3, float jitterThreshold = 3.0)
+  AdaptiveSmoother(float alpha = 0.3, float jitterThreshold = 100.0)
     : alpha(alpha), lastValue(0.0), initialized(false), jitterThreshold(jitterThreshold) {}
 
   /**
@@ -38,6 +40,7 @@ public:
       if (delta <= jitterThreshold) {
         lastValue = alpha * input + (1 - alpha) * lastValue;  // smooth small change
       } else {
+        dbg::print("Resetting jitter");
         lastValue = input;  // accept jump directly
       }
     }
