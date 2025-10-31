@@ -17,15 +17,15 @@
 // #define WAVE_LENGTH_SCALE_KNOB_PIN A0
 
 /* ────────── LED configuration ────────── */
-#define NUM_LEDS 300  // total LEDs on the strip
+#define NUM_LEDS 100  // total LEDs on the strip
 
 
 /* ─────────── Animation defaults ─────── */
 #define BRIGHTNESS 255  // 0-255, initial brightness
-#define BPM 2.0
-#define WAVE_LENGTH_SCALE 3.0
+#define BPM 6.0
+#define WAVE_LENGTH_SCALE 1.5
 #define RESOLUTION 2
-#define REVERSED true
+#define REVERSED false
 #define PALETTE_INDEX 6  // 0-based index into PREDEFINED_PALETTES
 
 /* ────────── Animation limits ────────── */
