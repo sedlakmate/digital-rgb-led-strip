@@ -22,8 +22,8 @@
 
 /* ─────────── Animation defaults ─────── */
 #define BRIGHTNESS 255  // 0-255, initial brightness
-#define BPM 5.0
-#define WAVE_LENGTH_SCALE 0.15
+#define BPM 2.0
+#define WAVE_LENGTH_SCALE 3.0
 #define RESOLUTION 2
 #define REVERSED true
 #define PALETTE_INDEX 6  // 0-based index into PREDEFINED_PALETTES
