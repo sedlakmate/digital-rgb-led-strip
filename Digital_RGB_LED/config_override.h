@@ -9,23 +9,23 @@
 #define DEBUG 1
 
 /* ──────────── Hardware pins ──────────── */
-#define LED_PIN 31  // Arduino digital pin
+#define LED_PIN 18  // Arduino digital pin
 // #define US_TRIG_PIN 7
 // #define US_ECHO_PIN 8
 // #define BRIGHTNESS_KNOB_PIN A0
 // #define BPM_KNOB_PIN A0
-#define WAVE_LENGTH_SCALE_KNOB_PIN A0
+// #define WAVE_LENGTH_SCALE_KNOB_PIN A0
 
 /* ────────── LED configuration ────────── */
-#define NUM_LEDS 100  // total LEDs on the strip
+#define NUM_LEDS 300  // total LEDs on the strip
 
 
 /* ─────────── Animation defaults ─────── */
 #define BRIGHTNESS 255  // 0-255, initial brightness
-#define BPM 18.0
-#define WAVE_LENGTH_SCALE 1.8
-#define RESOLUTION 3
-#define REVERSED false
+#define BPM 5.0
+#define WAVE_LENGTH_SCALE 0.15
+#define RESOLUTION 2
+#define REVERSED true
 #define PALETTE_INDEX 6  // 0-based index into PREDEFINED_PALETTES
 
 /* ────────── Animation limits ────────── */
