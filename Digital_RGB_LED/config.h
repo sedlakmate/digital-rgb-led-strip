@@ -80,6 +80,13 @@
 #define KNOB_5V 1023           // analogRead() max value for 5V reference
 #define KNOB_3_3V 675          // analogRead() max value for 3.3V reference
 
+/* ────────── WiFi & Web Server (ESP32 only) ────────── */
+#define WIFI_ENABLED false                        // Enable WiFi and web server features
+#define WIFI_AP_NAME "LED-Strip-Setup"           // Access Point name for WiFi config portal
+#define WIFI_AP_PASSWORD "ledstrip123"           // Access Point password (min 8 chars)
+#define WIFI_CONFIG_PORTAL_TIMEOUT 180           // Config portal timeout in seconds (0 = no timeout)
+#define WEB_SERVER_PORT 80                       // Web server port
+
 /* ─────────── Local overrides ─────────── */
 #ifdef __has_include
 #if __has_include("config_override.h")

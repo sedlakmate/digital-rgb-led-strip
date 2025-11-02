@@ -8,6 +8,8 @@
 #undef DEBUG
 #define DEBUG 1
 
+#define WIFI_ENABLED true                        // Enable WiFi and web server features
+
 /* ──────────── Hardware pins ──────────── */
 #define LED_PIN 18  // Arduino digital pin
 // #define US_TRIG_PIN 7

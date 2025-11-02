@@ -38,6 +38,11 @@
 #include "knob.h"
 #include "ultrasound.h"
 
+#ifdef WIFI_ENABLED
+#include "wifi_manager.h"
+#include "web_server.h"
+#endif
+
 CRGB leds[NUM_LEDS];
 CRGBPalette256 currentPalette;
 TBlendType currentBlending;
@@ -115,6 +120,21 @@ void setup() {
   currentPalette = CRGBPalette16(*gPalettes[gPaletteIndex]);
 
   dbg::println("Controller setup completed");
+
+  // Initialize WiFi and web server (ESP32 only)
+#ifdef ESP32
+#ifdef WIFI_ENABLED
+  dbg::println("\n=== WiFi & Web Server Initialization ===");
+  wifiSetup();
+
+  if (wifiIsConnected()) {
+    webServerSetup();
+    dbg::println("=== WiFi & Web Server Ready ===\n");
+  } else {
+    dbg::println("[WARNING] WiFi not connected, web server not started");
+  }
+#endif
+#endif
 }
 
 void loop() {

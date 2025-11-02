@@ -22,7 +22,11 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 
 ## Hardware Requirements
 
+### Supported Microcontrollers
 - Arduino Mega 2560 (or compatible)
+- ESP32 (any variant with WiFi support)
+
+### Common Components
 - WS2812B (NeoPixel) or compatible addressable LED strip
 - Potentiometers (for brightness, BPM, and pattern length control; optional)
 - HC-SR04 or compatible ultrasonic distance sensor (optional)
@@ -30,24 +34,54 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 ## Setup
 
 1. **Install Dependencies**
+
+   **Required for all boards:**
    - [FastLED](https://github.com/FastLED/FastLED) (avoid version 3.9.18, which is incompatible)
    - [NewPing](https://bitbucket.org/teckel12/arduino-new-ping/wiki/Home)
+
+   **Additional dependencies for ESP32 (WiFi/Web features):**
+   - [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu
+   - [ESPAsyncWebServer](https://github.com/ESP32Async/ESPAsyncWebServer) (v3.6.0+)
+   - [AsyncTCP](https://github.com/ESP32Async/AsyncTCP) (v3.3.2+)
 
 2. **Configure Hardware**
    - Edit `config.h` to set pin assignments and animation defaults.
    - For local or per-device changes, copy `config_override_template.h` to `config_override.h` and override only the needed settings.
    - See comments in `config.h` and module headers for wiring details.
+   - For ESP32, configure WiFi settings in `config.h` or `config_override.h` (AP name, password, timeout).
 
 3. **Build and Upload**
    - Open the project in the Arduino IDE or use Arduino CLI.
-   - Select the correct board (Arduino Mega 2560).
+   - Select the correct board (Arduino Mega 2560 or ESP32).
    - Compile and upload the sketch.
 
 ## Usage
 
+### Basic Control (All Boards)
 - Adjust the connected knobs to control brightness, animation speed (BPM), and pattern length in real time.
 - If an ultrasound sensor is connected, approach or move away to interactively change effects (e.g., brightness).
 - Enable debug output by setting `#define DEBUG 1` in your `config_override.h`.
+
+### ESP32 WiFi Setup
+1. **First Boot**: Device creates a WiFi access point named `LED-Strip-Setup` (password: `ledstrip123`)
+2. Connect to this AP with your phone or computer
+3. A captive portal opens automatically (or navigate to `192.168.4.1`)
+4. Select your WiFi network and enter the password
+5. Device saves credentials and connects automatically on future boots
+
+### Web Interface (ESP32 Only)
+- Once connected to WiFi, the device IP address is displayed in the Serial monitor
+- Open a web browser and navigate to the device's IP address
+- **Web Dashboard**: View current LED settings and system status
+- **REST API Endpoints**:
+  - `GET /api/status` - Get current settings as JSON
+  - `POST /api/led` - Control LED parameters (supports multiple parameters in one request)
+    - Parameters: `brightness` (0-255), `bpm`, `palette` (0-based index), `wavelength`
+    - Examples:
+      - `/api/led?brightness=200`
+      - `/api/led?brightness=200&bpm=10`
+      - `/api/led?palette=3&wavelength=2.5`
+- **Request Logging**: All HTTP requests are echoed to Serial with full details (method, URL, headers, parameters)
 
 ## File Structure
 
@@ -59,11 +93,15 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 - `debug.h` — Debug logging utilities
 - `config.h` — Main configuration
 - `config_override_template.h` — Template for local overrides
+- `wifi_manager.*` — WiFi connection management (ESP32 only)
+- `web_server.*` — Async web server and REST API (ESP32 only)
 
 ## Notes
 
 - Only define the pins/features you use in your configuration; unused features are automatically stubbed out.
 - Do not commit `config_override.h` to version control (see `.gitignore`).
+- WiFi and web server features are automatically enabled for ESP32 builds and disabled for Arduino Mega builds.
+- The code is fully backward compatible with Arduino Mega 2560.
 
 ## License
 
