@@ -2,12 +2,11 @@
 //
 // Implementation of WiFi connection management for ESP32.
 
-#ifdef ESP32
-
 #include "debug.h"
 #include "config.h"
 #include <WiFi.h>
 #include <WiFiManager.h>
+#include <ESPmDNS.h>
 
 WiFiManager wifiManager;
 
@@ -36,6 +35,43 @@ void wifiSetup() {
   dbg::println(WiFi.localIP());
   dbg::print("[WiFi] SSID: ");
   dbg::println(WiFi.SSID());
+
+  // Start mDNS responder
+  dbg::print("[mDNS] Starting mDNS responder with hostname: ");
+  dbg::print(MDNS_HOSTNAME);
+  dbg::println(".local");
+
+  // Give WiFi a moment to stabilize
+  delay(100);
+
+  if (MDNS.begin(MDNS_HOSTNAME)) {
+    dbg::println("[mDNS] mDNS responder started successfully");
+    dbg::print("[mDNS] Device accessible at: http://");
+    dbg::print(MDNS_HOSTNAME);
+    dbg::println(".local");
+    dbg::print("[mDNS] Also accessible at: http://");
+    dbg::println(WiFi.localIP());
+
+    // Add service to mDNS-SD
+    MDNS.addService("http", "tcp", WEB_SERVER_PORT);
+    MDNS.addServiceTxt("http", "tcp", "name", MDNS_SERVICE_NAME);
+    MDNS.addServiceTxt("http", "tcp", "version", "1.0");
+    MDNS.addServiceTxt("http", "tcp", "path", "/");
+
+    dbg::println("[mDNS] HTTP service advertised for discovery");
+    dbg::println("[mDNS] Service name: " + String(MDNS_SERVICE_NAME));
+
+    // Ensure mDNS announces itself
+    delay(100);
+  } else {
+    dbg::println("[mDNS] ERROR: Failed to start mDNS responder!");
+    dbg::println("[mDNS] Please access device via IP address: http://" + WiFi.localIP().toString());
+  }
+}
+
+void wifiLoop() {
+  // ESP32 mDNS handles updates automatically in the background
+  // No explicit update call needed (unlike ESP8266)
 }
 
 bool wifiIsConnected() {
@@ -45,5 +81,3 @@ bool wifiIsConnected() {
 String wifiGetIP() {
   return WiFi.localIP().toString();
 }
-
-#endif  // ESP32

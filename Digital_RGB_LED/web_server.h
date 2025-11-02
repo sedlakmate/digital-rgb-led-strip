@@ -22,8 +22,6 @@
 #ifndef WEB_SERVER_H
 #define WEB_SERVER_H
 
-#ifdef ESP32
-
 #include <ESPAsyncWebServer.h>
 
 // Initialize and start the web server
@@ -31,7 +29,5 @@ void webServerSetup();
 
 // Helper function to echo request details to Serial
 void echoRequestToSerial(AsyncWebServerRequest *request);
-
-#endif  // ESP32
 
 #endif  // WEB_SERVER_H

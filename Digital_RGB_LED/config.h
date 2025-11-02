@@ -86,6 +86,8 @@
 #define WIFI_AP_PASSWORD "ledstrip123"           // Access Point password (min 8 chars)
 #define WIFI_CONFIG_PORTAL_TIMEOUT 180           // Config portal timeout in seconds (0 = no timeout)
 #define WEB_SERVER_PORT 80                       // Web server port
+#define MDNS_HOSTNAME "ledstrip"                 // mDNS hostname (accessible as ledstrip.local)
+#define MDNS_SERVICE_NAME "LED Strip Controller" // mDNS service name for discovery
 
 /* ─────────── Local overrides ─────────── */
 #ifdef __has_include

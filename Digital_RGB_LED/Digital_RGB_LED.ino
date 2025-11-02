@@ -122,7 +122,6 @@ void setup() {
   dbg::println("Controller setup completed");
 
   // Initialize WiFi and web server (ESP32 only)
-#ifdef ESP32
 #ifdef WIFI_ENABLED
   dbg::println("\n=== WiFi & Web Server Initialization ===");
   wifiSetup();
@@ -134,10 +133,14 @@ void setup() {
     dbg::println("[WARNING] WiFi not connected, web server not started");
   }
 #endif
-#endif
 }
 
 void loop() {
+  // Update WiFi/mDNS (ESP32 only)
+#ifdef WIFI_ENABLED
+  wifiLoop();
+#endif
+
   handleUltrasound();  // If pins are not set, this function does nothing
 
   long now = millis();

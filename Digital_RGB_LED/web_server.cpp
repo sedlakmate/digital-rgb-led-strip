@@ -2,7 +2,6 @@
 //
 // Implementation of asynchronous web server for LED strip control.
 
-#ifdef ESP32
 
 // Include ESPAsyncWebServer BEFORE any WiFiManager includes to avoid HTTP method conflicts
 #include <ESPAsyncWebServer.h>
@@ -224,5 +223,3 @@ void webServerSetup() {
   dbg::println("[WebServer] Web server started on port " + String(WEB_SERVER_PORT));
   dbg::println("[WebServer] Access at: http://" + wifiGetIP());
 }
-
-#endif  // ESP32

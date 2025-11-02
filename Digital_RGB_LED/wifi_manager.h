@@ -16,7 +16,6 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
-#ifdef ESP32
 
 #include <WiFi.h>
 
@@ -24,12 +23,13 @@
 // Creates configuration portal if connection fails
 void wifiSetup();
 
+// Update mDNS (call in loop)
+void wifiLoop();
+
 // Get current WiFi connection status
 bool wifiIsConnected();
 
 // Get local IP address
 String wifiGetIP();
-
-#endif  // ESP32
 
 #endif  // WIFI_MANAGER_H

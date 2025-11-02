@@ -14,11 +14,20 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 
 ## Features
 
+### Core Features
 - Multiple color palettes and smooth animation effects
 - Real-time adjustment of brightness, animation speed (BPM), and pattern length via analog knobs
 - Optional ultrasound sensor for interactive effects (e.g., proximity-based brightness)
 - Modular configuration via `config.h` and local overrides in `config_override.h`
 - Debug logging (enable/disable in config)
+
+### ESP32-Specific Features
+- **WiFi Management**: Auto-connect with WiFiManager library and captive portal for easy setup
+- **mDNS Discovery**: Device broadcasts as `ledstrip.local` for easy network discovery
+- **Web Server**: Control LEDs remotely via REST API or web interface
+- **Request Logging**: All HTTP requests echoed to Serial for debugging
+- **Remote Control**: Adjust brightness, BPM, palette, and wave length via HTTP endpoints
+- **Status Monitoring**: Real-time status display via web interface
 
 ## Hardware Requirements
 
@@ -70,8 +79,9 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 5. Device saves credentials and connects automatically on future boots
 
 ### Web Interface (ESP32 Only)
-- Once connected to WiFi, the device IP address is displayed in the Serial monitor
-- Open a web browser and navigate to the device's IP address
+- Once connected to WiFi, the device broadcasts its presence on the network via mDNS
+- Access the device at **`http://ledstrip.local`** (or use the IP address shown in Serial monitor)
+- The device is discoverable as "LED Strip Controller" on your network
 - **Web Dashboard**: View current LED settings and system status
 - **REST API Endpoints**:
   - `GET /api/status` - Get current settings as JSON
@@ -96,12 +106,39 @@ This project controls a digital (addressable) LED strip, such as WS2812B (NeoPix
 - `wifi_manager.*` — WiFi connection management (ESP32 only)
 - `web_server.*` — Async web server and REST API (ESP32 only)
 
+## Troubleshooting
+
+### mDNS Not Resolving (ESP32)
+
+If `ledstrip.local` doesn't resolve:
+
+1. **Check mDNS support on your system:**
+   - **Linux**: Install `avahi-daemon` and ensure it's running: `sudo systemctl start avahi-daemon`
+   - **macOS**: mDNS (Bonjour) is built-in and should work automatically
+   - **Windows**: Windows 10+ has native mDNS support, but it may require a reboot after first setup
+
+2. **Test mDNS resolution:**
+   ```bash
+   # Linux/macOS
+   ping ledstrip.local
+
+   # Or check with getent (Linux)
+   getent hosts ledstrip.local
+   ```
+
+3. **Check device logs:** Enable debug mode and verify mDNS started successfully in the Serial monitor
+
+4. **Use IP address as fallback:** The device IP is always displayed in the Serial monitor
+
+5. **Ensure devices are on the same network:** mDNS only works within the same local network/subnet
+
 ## Notes
 
 - Only define the pins/features you use in your configuration; unused features are automatically stubbed out.
 - Do not commit `config_override.h` to version control (see `.gitignore`).
 - WiFi and web server features are automatically enabled for ESP32 builds and disabled for Arduino Mega builds.
 - The code is fully backward compatible with Arduino Mega 2560.
+- The mDNS hostname can be changed in `config.h` or `config_override.h` by modifying `MDNS_HOSTNAME`.
 
 ## License
 
