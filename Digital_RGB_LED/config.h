@@ -55,7 +55,9 @@
 #define BPM 5.0         // initial beats per minute
 #define WAVE_LENGTH_SCALE 1.0  // initial wave length scale
 #define RESOLUTION 1    // animation resolution (higher = smoother, slower)
-#define REVERSED false  // reverse LED order
+#define ANIMATION_REVERSED false  // reverse LED order
+#define ANIMATION_PARTS 1  // number of mirrored sections (1 = disabled)
+#define ANIMATION_PARTS_TYPE "FOLDED"  // "FOLDED" mirrors each second segment, "CUT" tiles without mirroring
 #define PALETTE_INDEX 6 // default palette index (0-based)
 
 /* ────────── Animation limits ────────── */
