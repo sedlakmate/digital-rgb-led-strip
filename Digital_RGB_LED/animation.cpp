@@ -10,6 +10,12 @@ void FillLEDsFromPaletteColors(long colorShift, int resolution, float waveLength
       index = NUM_LEDS - i - 1;
     }
 
+    // TODO: Fix reversed
+    if (index > NUM_LEDS / 2) {
+      leds[index] = leds[NUM_LEDS-index];
+      continue;
+    }
+
     long colorIndex = ((long)i * (long)256) / waveLengthScale / ((long)NUM_LEDS) + colorShift / (long)resolution;
 
     if (resolution == 1) {
