@@ -6,7 +6,7 @@
 
 /* ─────────── Debug flag ─────────────── */
 #undef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 
 /* ──────────── Hardware pins ──────────── */
 #define LED_PIN 50  // Arduino digital pin
@@ -22,16 +22,16 @@
 
 /* ─────────── Animation defaults ─────── */
 #define BRIGHTNESS 255  // 0-255, initial brightness
-#define BPM 1.0
-#define WAVE_LENGTH_SCALE 2.2
-#define RESOLUTION 2
+#define BPM 2
+#define WAVE_LENGTH_SCALE 0.1
+#define RESOLUTION 10
 #define REVERSED false
 #define PALETTE_INDEX 6  // 0-based index into PREDEFINED_PALETTES
 
 /* ────────── Animation limits ────────── */
 // #define BPM_MIN 0.01
 // #define BPM_MAX 15.0
-#define WAVE_LENGTH_SCALE_MIN 0.075
+#define WAVE_LENGTH_SCALE_MIN 0.01
 #define WAVE_LENGTH_SCALE_MAX 5.0
 
 
