@@ -43,10 +43,13 @@ CRGBPalette256 currentPalette;
 TBlendType currentBlending;
 
 // Palette array and index definitions
-const TProgmemRGBPalette16* const* gPalettes = PREDEFINED_PALETTES;
+const TProgmemRGBPalette16* const* gPalettes = PREDEFINED_PALETTES;  // matches extern in config.h
 const uint8_t gPaletteCount = PREDEFINED_PALETTES_COUNT;
 uint8_t gPaletteIndex = PALETTE_INDEX;
 
+// looper is the global colorShift used to index into the virtual pattern.
+// It is incremented by 1 for each physical frame; RESOLUTION is handled as
+// a separate multiplier on the frame rate rather than baked into looper.
 static long looper = 0;
 long stopper = millis();
 bool shouldUpdate = true;
@@ -56,10 +59,27 @@ int brightness = BRIGHTNESS;
 float waveLengthScale = WAVE_LENGTH_SCALE;
 float bpm = BPM;
 
+// Calculate the delay between frames so that:
+//   - One "beat" (as defined by BPM) is the time required to step through
+//     NUM_LEDS distinct start indices in the virtual pattern.
+//   - If RESOLUTION > 1, we refresh RESOLUTION times more often, i.e. there
+//     are NUM_LEDS * RESOLUTION frames per beat.
 int calculateDelayMillis() {
-  int delayMillis = (60000.0) / ((float)NUM_LEDS * bpm * (float)resolution);
-  if (delayMillis == 0) {
-    dbg::println("Animation configuration reached maximum speed!");
+  // Frames per beat = NUM_LEDS * resolution
+  float framesPerBeat = (float)NUM_LEDS * (float)resolution;
+  // Beats per second = bpm / 60
+  float beatsPerSecond = bpm / 60.0f;
+  // Frames per second = framesPerBeat * beatsPerSecond
+  float framesPerSecond = framesPerBeat * beatsPerSecond;
+
+  if (framesPerSecond <= 0.0f) {
+    dbg::println("Animation configuration reached maximum speed or invalid BPM!");
+    return 1;
+  }
+
+  int delayMillis = (int)(1000.0f / framesPerSecond);
+  if (delayMillis < 1) {
+    dbg::println("Animation configuration reached maximum speed or invalid BPM!");
     delayMillis = 1;
   }
   return delayMillis;
@@ -100,7 +120,7 @@ void setup() {
 
   ultrasoundSetup();  // If pins are not set, it does not execute anything
 
-  delay(500);
+  delay(300);
 
   uint8_t sel = (PALETTE_INDEX < PREDEFINED_PALETTES_COUNT)
                   ? PALETTE_INDEX
@@ -114,6 +134,9 @@ void setup() {
   if (gPaletteIndex >= gPaletteCount) gPaletteIndex = 0;
   currentPalette = CRGBPalette16(*gPalettes[gPaletteIndex]);
 
+  // Build initial virtual LED buffer based on starting waveLengthScale/resolution
+  RebuildVirtualLeds(waveLengthScale, resolution);
+
   dbg::println("Controller setup completed");
 }
 
@@ -121,11 +144,14 @@ void loop() {
   handleUltrasound();  // If pins are not set, this function does nothing
 
   long now = millis();
-  long expectedLooperDiff = (now - stopper) / delayMillis;
+  long elapsed = now - stopper;
 
-  if (expectedLooperDiff > 0) {
-    int missedFrames = expectedLooperDiff - 1;
-    looper += expectedLooperDiff;
+  if (elapsed >= delayMillis) {
+    long expectedFrames = elapsed / delayMillis;
+    int missedFrames = (int)expectedFrames - 1;
+
+    // Advance looper by the number of frames we conceptually rendered.
+    looper += expectedFrames;
     shouldUpdate = true;
 
     if (missedFrames > 0) {
@@ -161,6 +187,7 @@ void loop() {
 }
 
 void setLeds() {
+  // Always render from the precomputed virtual buffer.
   FillLEDsFromPaletteColors(looper, resolution, waveLengthScale);
   FastLED.show();
 }
@@ -204,8 +231,10 @@ void waveLengthByKnob() {
     dbg::print(" to ");
     dbg::println(newWaveLengthScale);
     waveLengthScale = newWaveLengthScale;
+    // Rebuild virtual buffer to reflect new wave length scale.
+    RebuildVirtualLeds(waveLengthScale, resolution);
     setLeds();
-   }
+  }
 #endif  // WAVE_LENGTH_SCALE_KNOB_PIN
 }
 
