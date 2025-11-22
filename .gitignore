@@ -2,6 +2,6 @@
 *.json
 /Digital_RGB_LED/credentials.h
 /.idea/editor.xml
-/Digital_RGB_LED/config_override.h
+#/Digital_RGB_LED/config_override.h
 /.idea/dictionaries/project.xml
 /.idea/copilot.*.xml
